@@ -26,7 +26,7 @@ app.post('/sign-in', async (req,res) => {
         const onlineUser = await connection.query(`UPDATE users SET active = $1 WHERE id = $2`,[true, user.rows[0].id]);
         const token = uuid();
         const newToken = await connection.query(`INSERT INTO sessions("userId", token) VALUES ($1,$2)`,[user.rows[0].id, token]);
-        const userInformation = {token, user: user.rows[0]}
+        const userInformation = {token, name: user.rows[0].name, id: user.rows[0].id, email: user.rows[0].email};
         res.send(userInformation);
     } else {
         res.sendStatus(404);
@@ -48,6 +48,18 @@ app.post('/sign-up', async (req,res) => {
 
     } catch {
         res.sendStatus(400);
+    }
+})
+
+app.post('/logout', async (req,res) => {
+    const token = req.headers.authorization.substring(7,); 
+    try{
+        const user = await connection.query(`SELECT * FROM sessions WHERE token = $1`,[token]);
+        const logUserOut = await connection.query(`UPDATE users SET active = $1 WHERE id = $2`,[false, user.rows[0].userId]);
+        const endSession = await connection.query(`DELETE FROM sessions WHERE token = $1`,[token]);
+        res.sendStatus(200);
+    } catch {
+        res.sendStatus(500);
     }
 })
 
