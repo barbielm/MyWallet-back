@@ -80,9 +80,8 @@ app.post('/add-deposit', async (req,res) =>{
 app.post('/add-withdraw', async (req,res) =>{
     try{
         const token = req.headers.authorization.substring(7,);
-        console.log(token)
         const user = await connection.query(`SELECT * FROM sessions WHERE token = $1`,[token]);
-        console.log(user.rows)
+
         if(!!user.rows[0]){
             const {value, description, date, isDeposit} = req.body;
             const addDeposit = await connection.query(`INSERT INTO extracts(value, description, date, "isDeposit", "userId") VALUES ($1,$2,$3,$4,$5)`,[value, description, date, isDeposit, user.rows[0].userId]);
@@ -91,7 +90,6 @@ app.post('/add-withdraw', async (req,res) =>{
             res.sendStatus(500);
         }
     } catch(e) {
-        console.log(e);
         res.sendStatus(500);
     }
 })
