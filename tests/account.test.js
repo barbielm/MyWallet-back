@@ -16,6 +16,8 @@ describe('POST /sign-in', () => {
     it("returns 200 for valid params", async () => {
         const body = {email: "gabriel@email.com", password:"1234"};
         const result = await supertest(app).post('/sign-in').send(body);
+        const deactivateUser = await connection.query(`UPDATE users SET active = $1 WHERE email = $2`,[false, body.email]);
+        const deleteToken = await connection.query(`DELETE FROM sessions USING users WHERE sessions."userId" = users.id AND users.email = $1`,[body.email]);
         expect(result.status).toEqual(200);
     })
     it("returns 404 for unvalid params", async () => {
